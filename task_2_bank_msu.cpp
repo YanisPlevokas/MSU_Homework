@@ -11,10 +11,10 @@ string NotStated = "NOT STATED";
 
 struct Payment
 {
-	string Currency;
-	int Sum ;
-	string ReceiverName ;
-	string ReceiverNumber ;
+	string CurrencyPayment;
+	int Sum;
+	string ReceiverName;
+	string ReceiverNumber;
 };
 
 
@@ -73,12 +73,12 @@ class Account
 		{
 			PaymentsAmount = copyAcc.PaymentsAmount;
 			AccountNumber = copyAcc.AccountNumber;
-			Currency = copyAcc.Currency;
+			Currency = copyAcc.CurrencyPayment;
 			PaymentsHistory = (Payment*) realloc (PaymentsHistory, PaymentsAmount);
 			for (int i = 0; i < PaymentsAmount; i++)
 			{
 				PaymentsHistory[PaymentsAmount - 1].Sum = copyAcc.PaymentsHistory[PaymentsAmount - 1].Sum;
-				PaymentsHistory[PaymentsAmount - 1].Currency = copyAcc.PaymentsHistory[PaymentsAmount - 1].Currency;
+				PaymentsHistory[PaymentsAmount - 1].CurrencyPayment = copyAcc.PaymentsHistory[PaymentsAmount - 1].CurrencyPayment;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverName = copyAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverName;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverNumber = copyAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverNumber;
 			}
@@ -93,7 +93,7 @@ class Account
 		{
 			PaymentsAmount = NewAcc.PaymentsAmount;
 			AccountNumber = NewAcc.AccountNumber;
-			Currency = NewAcc.Currency;
+			Currency = NewAcc.CurrencyPayment;
 			PaymentsHistory = NewAcc.PaymentsHistory;
 			return *this;
 		}
@@ -111,7 +111,7 @@ class Account
 				CompletedTransactions++;
 				PaymentsAmount++;
 				PaymentsHistory[PaymentsAmount - 1].Sum = SumOfPayment;
-				PaymentsHistory[PaymentsAmount - 1].Currency = CurrencyOfPayment;
+				PaymentsHistory[PaymentsAmount - 1].CurrencyPayment = CurrencyOfPayment;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverName = ReceiverNameNew;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverNumber = ReceiverNumberNew;
 				Sum -= SumOfPayment;
@@ -129,7 +129,7 @@ class Account
 			{
 				cout << PaymentsHistory[index].ReceiverName << " - Receiver Name" << endl;
 				cout << PaymentsHistory[index].ReceiverNumber << " - Receiver Number" << endl;
-				cout << PaymentsHistory[index].Currency << " - Currency" << endl;
+				cout << PaymentsHistory[index].CurrencyPayment << " - Currency" << endl;
 				cout << PaymentsHistory[index].Sum << " - Sum of Payment" << endl;
 				cout << "____________________" << endl;
 			}
@@ -143,11 +143,11 @@ class Account
 
 			for (int i = 0; i < PaymentsAmount; i++)
 			{
-				if (PaymentsHistory[i].Currency == "EUR")
+				if (PaymentsHistory[i].CurrencyPayment == "EUR")
 					localSum += PaymentsHistory[i].Sum * EuroCourse;
-				if (PaymentsHistory[i].Currency == "USD")
+				if (PaymentsHistory[i].CurrencyPayment == "USD")
 					localSum += PaymentsHistory[i].Sum * UsdCourse;
-				if (PaymentsHistory[i].Currency == "RUB")
+				if (PaymentsHistory[i].CurrencyPayment == "RUB")
 					localSum += PaymentsHistory[i].Sum;
 			}
 			return localSum;
@@ -199,14 +199,14 @@ class LawAccount : public Account
 		{
 			PaymentsAmount = copyAcc.PaymentsAmount;
 			AccountNumber = copyAcc.AccountNumber;
-			Currency = copyAcc.Currency;
+			Currency = copyAcc.CurrencyPayment;
 			NumberOfLawFirm = copyAcc.NumberOfLawFirm;
 			NameOfLawFirm = copyAcc.NameOfLawFirm;
 			PaymentsHistory = (Payment*) realloc (PaymentsHistory, PaymentsAmount);
 			for (int i = 0; i < PaymentsAmount; i++)
 			{
 				PaymentsHistory[PaymentsAmount - 1].Sum = copyAcc.PaymentsHistory[PaymentsAmount - 1].Sum;
-				PaymentsHistory[PaymentsAmount - 1].Currency = copyAcc.PaymentsHistory[PaymentsAmount - 1].Currency;
+				PaymentsHistory[PaymentsAmount - 1].CurrencyPayment = copyAcc.PaymentsHistory[PaymentsAmount - 1].CurrencyPayment;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverName = copyAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverName;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverNumber = copyAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverNumber;
 			}
@@ -216,11 +216,11 @@ class LawAccount : public Account
 		{
 			PaymentsAmount = NewAcc.PaymentsAmount;
 			AccountNumber = NewAcc.AccountNumber;
-			Currency = NewAcc.Currency;
+			Currency = NewAcc.CurrencyPayment;
 			for (int i = 0; i < PaymentsAmount; i++)
 			{
 				PaymentsHistory[PaymentsAmount - 1].Sum = NewAcc.PaymentsHistory[PaymentsAmount - 1].Sum;
-				PaymentsHistory[PaymentsAmount - 1].Currency = NewAcc.PaymentsHistory[PaymentsAmount - 1].Currency;
+				PaymentsHistory[PaymentsAmount - 1].CurrencyPayment = NewAcc.PaymentsHistory[PaymentsAmount - 1].CurrencyPayment;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverName = NewAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverName;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverNumber = NewAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverNumber;
 			}
@@ -286,20 +286,20 @@ class UserAccount : public Account
 		{
 			PaymentsAmount = copyAcc.PaymentsAmount;
 			AccountNumber = copyAcc.AccountNumber;
-			Currency = copyAcc.Currency;
+			Currency = copyAcc.CurrencyPayment;
 			NumberOfUserIDN = copyAcc.NumberOfUserIDN;
 			PaymentsHistory = (Payment*) realloc (PaymentsHistory, PaymentsAmount);
 			for (int i = 0; i < PaymentsAmount; i++)
 			{
 				PaymentsHistory[PaymentsAmount - 1].Sum = copyAcc.PaymentsHistory[PaymentsAmount - 1].Sum;
-				PaymentsHistory[PaymentsAmount - 1].Currency = copyAcc.PaymentsHistory[PaymentsAmount - 1].Currency;
+				PaymentsHistory[PaymentsAmount - 1].CurrencyPayment = copyAcc.PaymentsHistory[PaymentsAmount - 1].CurrencyPayment;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverName = copyAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverName;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverNumber = copyAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverNumber;
 			}
 		}
 		void changeInfo(string CurrencyNew = "RUB" , string AccountNumberNew = NotStated, int SumNew = 0, string NumberOfUserIDNNew = NotStated)
 		{
-			Currency = CurrencyNew;
+			Currency = CurrencyPaymentNew;
 			AccountNumber = AccountNumberNew;
 			Sum = SumNew;
 			NumberOfUserIDN = NumberOfUserIDNNew;
@@ -308,12 +308,12 @@ class UserAccount : public Account
 		{
 			PaymentsAmount = NewAcc.PaymentsAmount;
 			AccountNumber = NewAcc.AccountNumber;
-			Currency = NewAcc.Currency;
+			Currency = NewAcc.CurrencyPayment;
 			PaymentsHistory = (Payment*) realloc (PaymentsHistory, PaymentsAmount);
 			for (int i = 0; i < PaymentsAmount; i++)
 			{
 				PaymentsHistory[PaymentsAmount - 1].Sum = NewAcc.PaymentsHistory[PaymentsAmount - 1].Sum;
-				PaymentsHistory[PaymentsAmount - 1].Currency = NewAcc.PaymentsHistory[PaymentsAmount - 1].Currency;
+				PaymentsHistory[PaymentsAmount - 1].CurrencyPayment = NewAcc.PaymentsHistory[PaymentsAmount - 1].CurrencyPayment;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverName = NewAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverName;
 				PaymentsHistory[PaymentsAmount - 1].ReceiverNumber = NewAcc.PaymentsHistory[PaymentsAmount - 1].ReceiverNumber;
 			}
