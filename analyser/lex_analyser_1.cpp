@@ -300,7 +300,35 @@ Lex Scanner::get_lex ( )
 				}
 				else 
 				{
-					buf.push_back(c); 
+					buf.push_back(c);
+					if (c == '+')
+						{
+							gc();
+							if (c == '+')
+							{
+								buf.push_back(c);
+								j = look ( buf, TD);
+								return  Lex ( (lexemType) (j + (int) LEX_FIN), j + (int) LEX_FIN );
+							}
+							else
+							{
+								ungetc(c, fp);
+							}
+						}
+					if (c == '-')
+						{
+							gc();
+							if (c == '-')
+							{
+								buf.push_back(c);
+								j = look ( buf, TD);
+								return  Lex ( (lexemType) (j + (int) LEX_FIN), j + (int) LEX_FIN );
+							}
+							else
+							{
+								ungetc(c, fp);
+							}
+						}
 					if ( (j = look ( buf, TD)) != 19) // 19 - fin1 in TD
 					{
 						return  Lex ( (lexemType) (j + (int) LEX_FIN), j + (int) LEX_FIN );  
@@ -318,7 +346,7 @@ Lex Scanner::get_lex ( )
 				else 
 				{
 					buf_helper.push_back(c);
-					if (c != EOF)
+					if (c != EOF && c!= '\n' && c != '\t' && c != '\r')
 					{
 						if ((j = look( buf_helper, AllowedSymbols )) == 0)
 						{
