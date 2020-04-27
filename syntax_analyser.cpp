@@ -792,9 +792,7 @@ void Parser::operator_solo()
 			comb_operator(); 
 			break;
 		case LEX_MARKEDIDENT:
-			cout << "MARKED IDENT HERE BROOOOOO\n";
 			gl();
-			cout << curr_str_val << endl;
 			operator_solo();
 			break;
 		case LEX_GOTO:
@@ -809,7 +807,7 @@ void Parser::operator_solo()
 			break;
 		default:
 		{
-			cout << "HERE default_operator " << endl;
+			//cout << "HERE default_operator " << endl;
 			expression();
 			if (curr_type == LEX_SEMICOLON) 
 				gl();
@@ -896,7 +894,7 @@ void Parser::do_while_operator()
 		cout << "DO_WHILE PROBLEM2" << endl;
 		throw curr_lex;
 	}
-	cout << curr_type << " AAA\n";
+	//cout << curr_type << " AAA\n";
 	if (curr_type == LEX_LEFTBRACKET)
 		gl();
 	else
@@ -1028,7 +1026,7 @@ void Parser::expression()
 }
 void Parser::expression_1()
 {
-	cout << "expression_1 in" << endl;
+	//cout << "expression_1 in" << endl;
 	if (curr_type == LEX_ASSIGN)
 	{
 		gl();
@@ -1038,7 +1036,7 @@ void Parser::expression_1()
 }
 void Parser::expression_2()
 {
-	cout << "expression_2 in" << endl;
+	//cout << "expression_2 in" << endl;
 	if (curr_type == LEX_OR)
 	{
 		gl();
@@ -1048,7 +1046,7 @@ void Parser::expression_2()
 }
 void Parser::expression_3()
 {
-	cout << "expression_3 in" << endl;
+	//cout << "expression_3 in" << endl;
 	if (curr_type == LEX_AND)
 	{
 		gl();
@@ -1059,7 +1057,7 @@ void Parser::expression_3()
 
 void Parser::expression_4()
 {
-	cout << "expression_4 in" << endl;
+	//cout << "expression_4 in" << endl;
 	if ((curr_type == LEX_LESS)||
 		(curr_type == LEX_MORE)||
 		(curr_type == LEX_MOREEQUAL)
@@ -1075,7 +1073,7 @@ void Parser::expression_4()
 
 void Parser::expression_5()
 {
-	cout << "expression_5 in" << endl;
+	//cout << "expression_5 in" << endl;
 	if ((curr_type == LEX_PLUS)||(curr_type == LEX_MINUS))
 	{
 		cout << "expression_5 INSIDE " << endl;
@@ -1086,7 +1084,7 @@ void Parser::expression_5()
 }
 void Parser::expression_6()
 {
-	cout << "expression_6 in" << endl;
+	//cout << "expression_6 in" << endl;
 	if ((curr_type == LEX_STAR)||(curr_type == LEX_SLASH))
 	{
 		gl();
@@ -1097,7 +1095,7 @@ void Parser::expression_6()
 
 void Parser::expression_7()
 {
-	cout << "expression_7 in" << endl;
+	//cout << "expression_7 in" << endl;
 	if ((curr_type == LEX_UNARMINUS)||(curr_type == LEX_UNARPLUS))
 	{
 		gl();
@@ -1109,7 +1107,7 @@ void Parser::expression_7()
 
 void Parser::expression_8()
 {
-	cout << "expression_8 in" << endl;
+	//cout << "expression_8 in" << endl;
 	if ((curr_type == LEX_CONSTREAL)||(curr_type == LEX_CONSTSTRING)||(curr_type == LEX_CONSTINT))
 	{
 
@@ -1147,10 +1145,6 @@ int main()
 	{
 		parsim.analyze();
 	}
-
-
-
-
 
 	catch (...)
 	{
