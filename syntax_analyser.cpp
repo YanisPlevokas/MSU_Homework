@@ -5,7 +5,7 @@ using namespace std;
 
 enum STATE
 	{
-		initialState, IDENT, NUMB, COM, ABOVELESSEQUAL, INEQUAL, REAL, UNAR, STRING_CONST, COM1
+		initialState, IDENT, NUMB, COM, ABOVELESSEQUAL, INEQUAL, REAL, DOUBLESIGN, STRING_CONST, COM1
 	};
 
 enum LexemType
@@ -55,15 +55,19 @@ enum LexemType
 	LEX_SLASH, //41
 	LEX_LESSEQUAL, //42
 	LEX_MOREEQUAL, //43
-	LEX_UNARPLUS, //44
-	LEX_UNARMINUS, //45
+	LEX_DOUBLESIGNPLUS, //44
+	LEX_DOUBLESIGNMINUS, //45
 	LEX_INEQUAL, //46
 	LEX_BORDERLEXEM_1, // BORDER_LEXEM1 47
+	POLIZ_LABEL,
+	POLIZ_ADDRESS,
+	POLIZ_GO,
+	POLIZ_FGO,
 	LEX_EOF, // 48
 	LEX_NULL // 49
 };
 
-class Lex 
+class Lex
 {
 	LexemType lexem;
 	int int_lex;
@@ -102,32 +106,47 @@ public:
 		throw "!";
 	}
 };
-class Ident 
+
+struct identificator
 {
-		string name;
+	string identName;
+	int identFlag; // 0 for common ID, 1 for marked ID
+
+};
+
+class Ident  // marked_ident or common_ident
+{
+		string identName; // name_of_variable
 		bool declare;
-		LexemType type;
 		bool assign;
-		int value;
+		int value; // value_of_variable
+		float double_value;
+		int repeat_times; // counter for Marked operators_much
+		int identFlag; // 0 for common ID, 1 for Marked ID
 public:
 	Ident() 
 	{
 		declare = false;
 		assign = false; 
 	}
-	Ident(const string n) 
+	Ident(const identificator dataPack) 
 	{
-		name = n;
+		identName = dataPack.identName;
+		identFlag = dataPack.identFlag;
 		declare = false;
-		assign = false; 
+		assign = false;
 	}
     bool operator== (const string& s) const 
     {
-		return name == s; 
+		return identName == s; 
 	}
     string get_name ( ) 
     {
-    	return name; 
+    	return identName; 
+    }
+    int get_type( )
+    {
+    	return identFlag;
     }
 	bool get_declare ( ) 
 	{ 
@@ -136,14 +155,6 @@ public:
 	void put_declare ( ) 
 	{ 
 		declare = true;
-	}
-	LexemType get_type ( ) 
-	{
-		return  type;
-	}
-	void put_type ( LexemType t ) 
-	{
-		type = t; 
 	}
 	bool get_assign ( ) 
 	{ 
@@ -169,7 +180,7 @@ class Scanner
 	char currSymb;	
 	int look (const string& buf,  string list []) 
 	{
-		int i = 0;	
+		int i = 0;
 		while (list[i] != "fin" && list[i] != "fin1")
 		{
 			if ( buf ==  list [ i ] )
@@ -194,15 +205,19 @@ class Scanner
 };
 
 vector <Ident> tableOfID;
-int  put(const string & buf) 
+int  put(const string & buf, LexemType lex_type) 
 {
+	int idFlag;
 	vector <Ident>::iterator k;
 	k = find (tableOfID.begin(), tableOfID.end(), buf);
 	if ( k != tableOfID.end() )
 		return (k - tableOfID.begin());
-	tableOfID.push_back(buf);  
+	if (lex_type == LEX_MARKEDIDENT)
+		if
+	tableOfID.push_back(buf);
 	return (tableOfID.size() - 1);
 }
+
 
 
 string Scanner:: TW [] = 
@@ -218,16 +233,15 @@ string Scanner:: AllowedSymbols [] =
 	{"hello" ,";", "@", ",", ":", ":=", "(", ")", "{", "}",
 	"=","<", ">", "+", "-", "*", "/", "<=", ">=", "++", "--", "!=", " ", "fin1"};
 
+
+LexemType LastLexemType = LEX_EOF;
+
 Lex Scanner::get_lex ( ) 
 {
-	enum STATE
-	{
-		initialState, IDENT, NUMB, COM, ABOVELESSEQUAL, INEQUAL, REAL, UNAR, STRING_CONST, COM1
-	};
     STATE CS = initialState;
     string buf, buf_helper;
-    int d, j;
-    double double_numb;
+    int numberOfPosition;
+    float double_numb;
     do 
     {
     	getChar ();
@@ -278,41 +292,11 @@ Lex Scanner::get_lex ( )
 				else 
 				{
 					buf.push_back(currSymb);
-					if (currSymb == '+')
-						{
-							getChar();
-							if (currSymb == '+')
-							{
-								buf.push_back(currSymb);
-								j = look ( buf, TD);
-								// cout << buf << " "<<  j + (int) LEX_BORDERLEXEM_0 << endl;
-								return  Lex ( (LexemType) (j + (int) LEX_BORDERLEXEM_0), j + (int) LEX_BORDERLEXEM_0, 0, buf );
-							}
-							else
-							{
-								ungetc(currSymb, filePointer);
-							}
-						}
-					if (currSymb == '-')
-						{
-							getChar();
-							if (currSymb == '-')
-							{
-								buf.push_back(currSymb);
-								j = look ( buf, TD);
-								// cout << buf << " "<<  j + (int) LEX_BORDERLEXEM_0 << endl;
-								return  Lex ( (LexemType) (j + (int) LEX_BORDERLEXEM_0), j + (int) LEX_BORDERLEXEM_0, 0, buf );
-							}
-							else
-							{
-								ungetc(currSymb, filePointer);
-							}
-						}
-
-					if ( (j = look ( buf, TD)) != 21) // 21 - fin1 in TD
+					if ( (numberOfPosition = look ( buf, TD)) != 21) // 21 - fin1 in TD
 					{
-						// cout << buf << " "<<  j + (int) LEX_BORDERLEXEM_0 << endl;
-						return  Lex ( (LexemType) (j + (int) LEX_BORDERLEXEM_0), j + (int) LEX_BORDERLEXEM_0, 0, buf );  
+						// cout << buf << " "<<  numberOfPosition + (int) LEX_BORDERLEXEM_0 << endl;
+						LastLexemType = (LexemType) (numberOfPosition + (int) LEX_BORDERLEXEM_0);
+						return  Lex ( (LexemType) (numberOfPosition + (int) LEX_BORDERLEXEM_0), numberOfPosition + (int) LEX_BORDERLEXEM_0, 0, buf );  
 					}
 					else
 						throw currSymb;
@@ -329,29 +313,39 @@ Lex Scanner::get_lex ( )
 					buf_helper.push_back(currSymb);
 					if (currSymb != EOF && currSymb!= '\n' && currSymb != '\t' && currSymb != '\r')
 					{
-						if ((j = look( buf_helper, AllowedSymbols )) == 0)
+						if ((numberOfPosition = look( buf_helper, AllowedSymbols )) == 0)
 						{
 							throw "!";
 						}
 					}
-					if (currSymb == ':')
-					{
+					if (currSymb == ':')     //Marked_operator
+					{						 //example - A:
+						getChar();
+						if (currSymb == '=')
+						{
+							ungetc(currSymb, filePointer);
+							ungetc(':', filePointer);
+						}
+						cout << "MARKED_OPERATOR\n";
 						CS = initialState;
+						LastLexemType = LEX_MARKEDIDENT;
 						return Lex (LEX_MARKEDIDENT, (int) LEX_MARKEDIDENT, 0, buf);
 					}
 					ungetc(currSymb, filePointer);
 
-					if ( (j = look (buf, TW)) != 0 )
+					if ( (numberOfPosition = look (buf, TW)) != 0 ) // serviceWords
 					{
 						CS = initialState;
-						return  Lex ((LexemType) j ,  j , 0, buf);
+						LastLexemType = (LexemType) numberOfPosition;
+						return  Lex ((LexemType) numberOfPosition ,  numberOfPosition , 0, buf);
 					}
 		         	else 
 		         	{
-						j = put(buf); 
+						numberOfPosition = put(buf, LEX_ID); // FIX LATER
 						CS = initialState;
-						// cout << buf << " " << (int) LEX_ID << " " << j << endl;
-						return  Lex (LEX_ID, j, 0, buf);
+						// cout << buf << " " << (int) LEX_ID << " " << numberOfPosition << endl;
+						LastLexemType = LEX_ID;
+						return  Lex (LEX_ID, numberOfPosition, 0, buf);
 					}
 				}
 				break;
@@ -363,6 +357,7 @@ Lex Scanner::get_lex ( )
 				else if (currSymb == '"')
 				{
 					CS = initialState;
+					LastLexemType = LEX_CONSTSTRING;
 					return Lex (LEX_CONSTSTRING, 0, 0, buf);
 				}
 				else
@@ -382,6 +377,7 @@ Lex Scanner::get_lex ( )
 				else
 				{
 					ungetc(currSymb, filePointer);
+					LastLexemType = LEX_CONSTREAL;
 					return  Lex ( LEX_CONSTREAL, 0, stof(buf), buf); 
 				}
 				break;
@@ -404,6 +400,7 @@ Lex Scanner::get_lex ( )
 				{
 					ungetc(currSymb, filePointer);
 					// cout << buf << " " << (int) LEX_CONSTINT;
+					LastLexemType = LEX_CONSTINT;
 					return  Lex ( LEX_CONSTINT, stoi(buf), 0, buf); 
 				}
 				break;
@@ -416,6 +413,7 @@ Lex Scanner::get_lex ( )
 				else
 				{
 					// cout << buf << " " << (int) LEX_SLASH << endl;
+					LastLexemType = LEX_SLASH;
 					return	Lex( LEX_SLASH, (int) LEX_SLASH, 0, buf);
 				}
 				break;
@@ -446,16 +444,18 @@ Lex Scanner::get_lex ( )
 				if ( currSymb == '=' ) 
 				{
 				    buf.push_back(currSymb);
-					j = look ( buf, TD );
-					// cout << buf << " "<< j + (int) LEX_BORDERLEXEM_0 << endl;
-					return  Lex ((LexemType) ( j + (int) LEX_BORDERLEXEM_0), j , 0, buf);
+					numberOfPosition = look ( buf, TD );
+					// cout << buf << " "<< numberOfPosition + (int) LEX_BORDERLEXEM_0 << endl;
+					LastLexemType = (LexemType) (numberOfPosition + (int) LEX_BORDERLEXEM_0);
+					return  Lex ((LexemType) ( numberOfPosition + (int) LEX_BORDERLEXEM_0), numberOfPosition , 0, buf);
 				}
 				else  
 				{
                     ungetc(currSymb, filePointer);    
-                    j = look (buf, TD);
-                    // cout << buf << " " << j + (int) LEX_BORDERLEXEM_0 << endl;
-					return  Lex ((LexemType) ( j + (int) LEX_BORDERLEXEM_0),  j , 0, buf);
+                    numberOfPosition = look (buf, TD);
+                    // cout << buf << " " << numberOfPosition + (int) LEX_BORDERLEXEM_0 << endl;
+                    LastLexemType = (LexemType) (numberOfPosition + (int) LEX_BORDERLEXEM_0);
+					return  Lex ((LexemType) ( numberOfPosition + (int) LEX_BORDERLEXEM_0),  numberOfPosition , 0, buf);
 				}
 				break;
 			case INEQUAL:
@@ -463,9 +463,10 @@ Lex Scanner::get_lex ( )
 				if ( currSymb == '=' ) 
 				{
 			       buf.push_back(currSymb);
-			       j = look ( buf, TD );
-			       // cout << buf << " "<< j + (int) LEX_BORDERLEXEM_0 << endl;
-			       return Lex ( LEX_INEQUAL, j , 0, buf);	 
+			       numberOfPosition = look ( buf, TD );
+			       // cout << buf << " "<< numberOfPosition + (int) LEX_BORDERLEXEM_0 << endl;
+			       LastLexemType = LEX_INEQUAL;
+			       return Lex ( LEX_INEQUAL, numberOfPosition , 0, buf);	 
 			   	}
 				else  
 					throw  '!';
@@ -480,19 +481,159 @@ Lex Scanner::get_lex ( )
 }
 
 
+template <class T, int max_size> class Stack
+{
+    T s[max_size];
+    int top;
+public:
+    Stack() { top = 0; }
+    void reset() { top = 0; }
+    void push(T i);
+    T pop();
+	bool three(){return top >= 3;}
+    bool is_empty() { return top == 0; }
+    bool is_full() { return top == max_size; }
+};
 
+template <class T, int max_size>
 
+void Stack <T, max_size>::push(T i)
+{
+    if (!is_full())
+    {
+        s[top] = i;
+        ++top;
+    }
+    else
+        throw "Stack_is_full";
+}
+template <class T, int max_size>
+T Stack<T, max_size>::pop()
+{
+    if (!is_empty())
+    {
+        --top;
+        return s[top];
+    }
+    else
+        throw "Stack_is_empty";
+}
+/*
+class Poliz
+{
+    Lex *lexPointer;
+    int size;
+    int free;
 
+public:
+    static string T[];
+    Poliz(int max_size = 150)
+    {
+        lexPointer = new Lex[size = max_size];
+        free = 0;
+    };
+    ~Poliz() 
+    { 
+    	delete[] lexPointer; 
+    };
+    void put_lex(Lex l)
+    {
+        lexPointer[free] = l;
+        ++free;
+    };
 
+    void put_lex(Lex l, int place) 
+    { 
+    	lexPointer[place] = l; 
+    };
+    void blank() 
+    { 
+    	++free; 
+    };
+    int get_free() 
+    { 
+    	return free; 
+    };
+    Lex &operator[](int index)
+    {
+        if (index > size)
+            throw "POLIZ:out of array";
+        else if (index > free)
+            throw "POLIZ:indefinite element of array";
+        else
+            return lexPointer[index];
+    };
+	void print()
+    {
+        for (int i = 0; i < free; ++i){
+			if (lexPointer[i].get_type()== LEX_ID){
+				cout <<i<<" "<< tableOfID[(lexPointer[i]).get_value_int()].get_name()<<endl;
+			}
+			else if (lexPointer[i].get_type() == LEX_CONSTINT){
+				cout <<i<<" "<< (lexPointer[i]).get_value_int()<<endl;
+			}
+			else if (lexPointer[i].get_type()== LEX_CONSTREAL){
+				cout <<i<<" "<< (lexPointer[i]).get_value_double()<<endl;
+			}
+			else if (lexPointer[i].get_type()== LEX_CONSTSTRING){
+				cout <<i<<" "<< (lexPointer[i]).get_string()<<endl;
+			}
+			else if (lexPointer[i].get_type()== POLIZ_GO){
+				cout <<i<<" "<< "GO"<<endl;
+			}
+			else if (lexPointer[i].get_type()== POLIZ_LABEL){
+				cout <<i<<" "<< ((lexPointer[i]).get_value_int())<<"! "<<endl;
+			}
+			else if (lexPointer[i].get_type()== POLIZ_FGO){
+				cout <<i<<" "<< "FGO"<<endl;
+			}
+			else if (lexPointer[i].get_type()== POLIZ_ADDRESS){
+				cout <<i<<" &"<<tableOfID[(lexPointer[i]).IDget()].get_name()<<endl;
+			}
+			else
+            cout <<i<<" "<< T[(lexPointer[i]).get_type()]<<endl;
+		};
+		cout<<endl;
 
-class Parser {
+    };
+};
+
+string Poliz:: T[ ] = {"begin","do","else","end","if","false","int","real","string","not","or","program","step",
+    "read","then","true","goto","var","while","write","id","conststring", "constint", "constreal", "markedident",
+    "borderlexem0", ";", "@", ",", ":", ":=", "(", ")", "{", "}", "=", "<", ">", "+", "-", "*", "/",
+	"<=", ">=", "++", "--", "!=", "borderlexem1", "polizlabel", "polizadress", "polizgo", "polizfgo", "eof", "null"};
+
+*/
+class Parser 
+{
 
 	Lex curr_lex;
 	LexemType curr_type;
 	int curr_val_int;
 	float curr_val_float;
 	string curr_str_val;
+	int curr_id;
+
+	Lex saved_lex;
+	LexemType saved_lex_type;
+	int curr_val_int_saved;
+	float curr_val_float_saved;
+	string curr_str_val_saved;
+	int saved_id;
+
+
 	Scanner scan;
+
+
+
+	Stack <int, 100> st_int;
+	Stack <LexemType, 100> st_lex;
+	Stack <LexemType, 100> helpStack;
+	LexemType descripHelp;
+
+
+
+
 
 	void gl()
 	{
@@ -502,6 +643,15 @@ class Parser {
 		curr_val_float = curr_lex.get_value_double();
 		curr_str_val = curr_lex.get_string();
 		cout << curr_str_val << endl;
+	}
+
+	void save()
+	{
+		saved_lex = curr_lex;
+		saved_lex_type = curr_type;
+		curr_val_int_saved = curr_val_int;
+		curr_val_float_saved = curr_val_float;
+		curr_str_val_saved = curr_str_val;
 	}
 
 	void prog();
@@ -526,15 +676,154 @@ class Parser {
 	void expression_4();
 	void expression_5();
 	void expression_6();
-	void expression_7();
-	void expression_8();
+	void resultType();
 
+	void dec(LexemType type); // semantic
+	void check_id(int f);
+	void check_op();
+	void check_not();
+	void eq_type();
+	void eq_bool();
+	void check_id_in_read();
 
 public:
 	//Poliz prog; // внутреннее представление программы
 	//Parser(const char *program) : scan(program), prog(1000) {}
 	void analyze(); // анализатор с действиями
 };
+
+
+/*
+void Parser::dec(lexnum type)
+{
+	int i;
+	while (!st_int.is_empty())
+	{
+		i = st_int.pop();
+		if (tableOfID[i].get_declare())
+			throw "twice dec";
+		else
+		{
+			tableOfID[i].put_declare();
+			tableOfID[i].put_num(type);
+		}
+	}
+}
+
+void Parser::check_id(int f=0)
+{
+	if (tableOfID[c_id].get_declare()){
+        if (f==0) prog.put_lex(curr_lex);
+	}
+	else
+		throw "not declared";
+}
+
+void Parser::check_op()
+{	
+        if (helpStack.three())
+        {
+            lexnum t1, t2, op;
+            lexnum resultType = LEX_NULL;
+            t2 = helpStack.pop();
+            op = helpStack.pop();
+            t1 = helpStack.pop();
+            
+            //cout<<t1<<" "<<op<<" "<<t2<<endl;
+            if ((op == LEX_PLUS || op == LEX_MINUS || op == LEX_STAR || op == LEX_SLASH|| op == LEX_PERCENT))
+            {
+                if ((t1==LEX_INT)&&(t2==LEX_INT)) resultType=LEX_INT;
+            }
+            if ((op == LEX_PLUS || op == LEX_MINUS || op == LEX_STAR || op == LEX_SLASH))
+            {
+                if ((t1==LEX_REAL)&&(t2==LEX_REAL)) 
+                resultType=LEX_REAL;
+                if ((t1==LEX_INT)&&(t2==LEX_REAL)) 
+                resultType=LEX_REAL;
+                if ((t1==LEX_REAL)&&(t2==LEX_INT)) 
+                resultType=LEX_REAL;	
+            }
+            if (op == LEX_PLUS){
+                if ((t1==LEX_STRING)&&(t2==LEX_STRING)) resultType=LEX_STRING;
+            }
+            if (op == LEX_LESS || op == LEX_LESSEQ || op == LEX_EQ || op == LEX_NEQ|| op == LEX_GREATER|| op == LEX_GREATEREQ){
+                if ((t1==LEX_INT)&&(t2==LEX_INT)) resultType=LEX_INT;
+                if ((t1==LEX_REAL)&&(t2==LEX_REAL)) resultType=LEX_INT;
+                if ((t1==LEX_REAL)&&(t2==LEX_INT)) resultType=LEX_INT;
+                if ((t1==LEX_INT)&&(t2==LEX_REAL)) resultType=LEX_INT; 
+            }
+            if (op == LEX_LESS|| op == LEX_EQ || op == LEX_NEQ|| op == LEX_GREATER){
+                if ((t1==LEX_STRING)&&(t2==LEX_STRING)) resultType=LEX_INT;
+            }
+            if (op == LEX_AND|| op == LEX_OR){
+                if ((t1==LEX_INT)&&(t2==LEX_INT)) resultType=LEX_INT;
+            }
+            if (op == LEX_ASSIGN){
+                if ((t1==LEX_INT)&&(t2==LEX_INT)) resultType=LEX_INT;
+                if ((t1==LEX_REAL)&&(t2==LEX_REAL)) resultType=LEX_REAL;
+                if ((t1==LEX_REAL)&&(t2==LEX_INT)) resultType=LEX_REAL;
+                if ((t1==LEX_INT)&&(t2==LEX_REAL)) resultType=LEX_INT;
+                if ((t1==LEX_STRING)&&(t2==LEX_STRING)) resultType=LEX_STRING;
+            }
+            if (resultType==LEX_NULL) throw "wrong types are in operation";
+            helpStack.push(resultType);
+        }
+}
+
+
+void Parser::check_not()
+{
+	if (helpStack.pop() != LEX_INT)
+		throw "wrong type is in not";
+	else
+	{
+		helpStack.push(LEX_INT);
+	}
+}
+
+void Parser::eq_type()
+{
+	if (st_lex.pop() != st_lex.pop())
+		throw "wrong types are in :=";
+}
+
+
+void Parser::eq_bool()
+{
+	if (helpStack.pop() != LEX_INT)
+		throw "expression is not boolean";
+}
+
+
+
+
+void Parser::check_id_in_read()
+{
+	if (!tableOfID[c_id].get_declare())
+		throw "not declared";
+}
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void Parser::analyze()
 {
 	gl();
@@ -691,8 +980,6 @@ void Parser::operators_much()
 
 void Parser::operator_solo()
 {
-	cout << "HERE operators_solo " << endl;
-	cout << curr_type << endl;
 	switch (curr_type)
 	{
 		case LEX_IF: 
@@ -930,14 +1217,29 @@ void Parser::comb_operator()
 }
 void Parser::expression()
 {
-	expression_8();
-	expression_7();
-	expression_6();
-	expression_5();
-	expression_4();
-	expression_3();
-	expression_2();
+	cout << "expression\n";
+	/*if (curr_type == LEX_ID)
+	{
+		cout << "expression_first_id\n";
+		saved_lex = curr_lex;
+		gl();
+		if (curr_type == LEX_ASSIGN)
+		{
+			cout << "expression_lex_assign\n";
+			gl();
+			expression();
+		}
+		else
+		{
+			curr_lex = saved_lex;
+		}
+	}
+	*/
+	cout << curr_lex.get_string() << " HERE\n";
 	expression_1();
+
+
+	cout << "after_expression_1\n";
 	bool isCurrentTypeSuitable = ((curr_type == LEX_ID) || ( curr_type == LEX_CONSTINT ) ||
 	(curr_type == LEX_CONSTREAL) || 
 	(curr_type == LEX_CONSTSTRING) || (curr_type == LEX_LEFTBRACKET ) || 
@@ -946,94 +1248,75 @@ void Parser::expression()
 	if (isCurrentTypeSuitable)
 	{
 		expression();
-		gl();	
+		gl();
 	}
 }
 void Parser::expression_1()
 {
-	//cout << "expression_1 in" << endl;
-	if (curr_type == LEX_ASSIGN)
+	cout << "expression_1 in" << endl;
+	expression_2();
+	while (curr_type == LEX_OR)
 	{
 		gl();
-		expression();
-		expression_1();	
+		expression_2();	
 	}
 }
 void Parser::expression_2()
 {
-	//cout << "expression_2 in" << endl;
-	if (curr_type == LEX_OR)
+	cout << "expression_2 in" << endl;
+	expression_3();
+	while (curr_type == LEX_AND)
 	{
+		expression_3();
 		gl();
-		expression();
-		expression_2();	
-	}
-}
-void Parser::expression_3()
-{
-	//cout << "expression_3 in" << endl;
-	if (curr_type == LEX_AND)
-	{
-		gl();
-		expression();
-		expression_3();	
 	}
 }
 
-void Parser::expression_4()
+void Parser::expression_3()
 {
-	//cout << "expression_4 in" << endl;
-	if ((curr_type == LEX_LESS)||
+	cout << "expression_3 in" << endl;
+	expression_4();
+	while ((curr_type == LEX_LESS)||
 		(curr_type == LEX_MORE)||
 		(curr_type == LEX_MOREEQUAL)
 		||(curr_type == LEX_LESSEQUAL)
 		||(curr_type == LEX_EQUAL)
 		||(curr_type == LEX_INEQUAL))
 	{
+		expression_4();
 		gl();
-		expression();
-		expression_4();	
 	}
 }
 
+void Parser::expression_4()
+{
+	cout << "expression_4 in" << endl;
+	expression_5();
+	while ((curr_type == LEX_PLUS)||(curr_type == LEX_MINUS))
+	{
+		expression_5();
+		gl();
+	}
+}
 void Parser::expression_5()
 {
-	//cout << "expression_5 in" << endl;
-	if ((curr_type == LEX_PLUS)||(curr_type == LEX_MINUS))
+	cout << "expression_5 in" << endl;
+	expression_6();
+	while ((curr_type == LEX_STAR)||(curr_type == LEX_SLASH))
 	{
-		cout << "expression_5 INSIDE " << endl;
+		expression_6();
 		gl();
-		expression();
-		expression_5();
 	}
 }
+
 void Parser::expression_6()
 {
-	//cout << "expression_6 in" << endl;
-	if ((curr_type == LEX_STAR)||(curr_type == LEX_SLASH))
+	cout << "expression_6 in" << endl;
+	cout << curr_lex.get_string() << " HERE_NEW\n";
+	if ((curr_type == LEX_CONSTREAL)||(curr_type == LEX_CONSTSTRING)||(curr_type == LEX_CONSTINT))
 	{
-		gl();
-		expression();
-		expression_6();
+
 	}
-}
-
-void Parser::expression_7()
-{
-	//cout << "expression_7 in" << endl;
-	if ((curr_type == LEX_UNARMINUS)||(curr_type == LEX_UNARPLUS))
-	{
-		gl();
-		//expression();
-		expression_7();
-	}
-}
-
-
-void Parser::expression_8()
-{
-	//cout << "expression_8 in" << endl;
-	if ((curr_type == LEX_CONSTREAL)||(curr_type == LEX_CONSTSTRING)||(curr_type == LEX_CONSTINT)) {}
 	else if (curr_type == LEX_LEFTBRACKET)
 	{
 		gl();
@@ -1042,18 +1325,18 @@ void Parser::expression_8()
 			;
 		else 
 			{
-				cout << "expression_8 PROBLEM" << endl;
+				cout << "expression_6 PROBLEM" << endl;
 				throw curr_lex;
 			}
 	}
-	else if ( (curr_type == LEX_NOT)||(curr_type == LEX_MINUS) )
+	else if ( (curr_type == LEX_NOT)||(curr_type == LEX_MINUS) || (curr_type == LEX_PLUS) )
 	{
 		gl();
-		expression_8();
+		expression_6();
 	}
 	else if (curr_type != LEX_ID)
 		{
-			cout << "expression_8 PROBLEM" << endl; 
+			cout << "expression_6 PROBLEM" << endl; 
 			throw curr_lex;
 		}
 	gl();
@@ -1070,5 +1353,6 @@ int main()
 	{
 		cout << "Problem" << endl;
 	}
+
     return 0; 
 }
