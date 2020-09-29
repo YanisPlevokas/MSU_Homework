@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Threading;
 
 namespace msu_homework
 {
@@ -53,7 +53,7 @@ namespace msu_homework
         public V4DataOnGrid(string measure, double frequency, Grid2D new_net) : base(measure, frequency)
         {
             this.net = new_net;
-            this.complex_massiv = new Complex[2,3];
+            this.complex_massiv = new Complex[net.OX_net_counter,net.OY_net_counter];
         }
         public void InitRandom(double minValue, double maxValue)
         {
@@ -82,8 +82,6 @@ namespace msu_homework
 
             int rank = complex_massiv.GetLength(0);
             int length = complex_massiv.GetLength(1);
-
-            double new_eps = Convert.ToDouble(eps);
 
             Complex[] NearMaxReturnable = new Complex[10];
 
@@ -143,6 +141,19 @@ namespace msu_homework
         {
             V4DataCollection ret_obj = new V4DataCollection(obj.measures_info, obj.frequency_info);
             ret_obj.dict = new Dictionary<System.Numerics.Vector2, System.Numerics.Complex>();
+
+            int rank = obj.complex_massiv.GetLength(0);
+            int length = obj.complex_massiv.GetLength(1);
+            for (int i = 0; i < rank; i++)
+            {
+                for (int j = 0; j < length; j++)
+                {
+                    Vector2 new_vector = new Vector2((float)i * obj.net.OX_step, (float)j * obj.net.OY_step);
+                    Complex new_complex = obj.complex_massiv[i, j];
+                    ret_obj.dict.Add(new_vector, new_complex);
+                }
+            }
+
             return ret_obj;
         }
     }
@@ -208,7 +219,6 @@ namespace msu_homework
 
 
         }
-
         public override string ToLongString()
         {
             string s = this.ToString();
@@ -234,10 +244,15 @@ namespace msu_homework
     {
         private List<V4Data> list;
 
-        interface IEnumerable<V4Data>
+        public interface IEnumerable
         {
-            bool Equals(V4Data obj);
+            IEnumerator GetEnumerator();
         }
+        public IEnumerator<V4Data> GetEnumerator()
+        {
+            return list.GetEnumerator();
+        }
+
         public V4MainCollection()
         {
             this.list = new List<V4Data>();
@@ -252,41 +267,32 @@ namespace msu_homework
         }
         public void Add(V4Data item)
         {
-            list.Append(item);
+             list.Add(item);
         }
+
         public bool Remove(string id, double w)
         {
-            int i = 0;
-            foreach(V4Data item in list)
-            {
-                if ( (item.measures_info == id) && (item.frequency_info == w) )
-                {
-                    list.RemoveAt(i);
-                }
-                else
-                {
-                    i++;
-                }
-            }
-            return (i > 0);
+            int flag = 0;
+            flag = list.RemoveAll(item => item.measures_info == id && item.frequency_info == w);
+            return (flag > 0);
         }
 
         public void AddDefaults()
         {
             int n = 0;
-            Grid2D just_object = new Grid2D((float)2.1, 1, (float)2.1, 1);
+
+            Grid2D just_object = new Grid2D((float)2.1, 4, (float)2.1, 4);
             V4DataOnGrid onGrid_object = new V4DataOnGrid("hello", 2.3, just_object);
-            onGrid_object.complex_massiv = new Complex[2,3]; //2 и 3 - просто удобный размер для тестов
             V4DataCollection collection_object = new V4DataCollection("hello", 2.3);
-            double minVal, maxVal;
-            minVal = 12.0;
-            maxVal = 24.0;
+            int number_of_new_objects = 5;
+            double minVal = 12.0;
+            double maxVal = 24.0;
             Random rnd = new Random();
 
             for (int i = 0; i < 3 + n; i++)
             {
                 onGrid_object.InitRandom(minVal, maxVal);
-                collection_object.InitRandom(5, (float)rnd.NextDouble(), (float)rnd.NextDouble(), minVal, maxVal);
+                collection_object.InitRandom(number_of_new_objects, (float)rnd.NextDouble(), (float)rnd.NextDouble(), minVal, maxVal);
                 list.Add(onGrid_object);
                 list.Add(collection_object);
             }
@@ -301,10 +307,6 @@ namespace msu_homework
             return s;
         }
         
-        public List<V4Data> return_list()
-        {
-            return list;
-        }
 
     }
 
@@ -314,22 +316,26 @@ namespace msu_homework
     {
         static void Main(string[] args)
         {
-            //Grid2D just_object = new Grid2D((float)2.1, 5, (float)4.2, 5);
-            //V4DataOnGrid grid_object = new V4DataOnGrid("hello", 2.4, just_object);
-            //grid_object.InitRandom(2.5, 10);
-            //Console.WriteLine(grid_object.ToLongString());
+                                                                        /*
+            Grid2D just_object = new Grid2D((float)2.1, 5, (float)4.2, 5);
+            V4DataOnGrid grid_object = new V4DataOnGrid("hello", 2.4, just_object);
+            grid_object.InitRandom(2.5, 10);
+            Console.WriteLine(grid_object.ToLongString());
+     
+                                                                        
 
-            //V4DataCollection new_object = (V4DataCollection)grid_object;
-            //Console.WriteLine("\n");
-            //new_object.InitRandom(5, (float)5.3, (float)5.3, 0.2, 0.6);
-            //Console.WriteLine(new_object.ToLongString());
-            //Console.WriteLine("\n");
+            V4DataCollection new_object = (V4DataCollection)grid_object;
+            Console.WriteLine("\n");
+            Console.WriteLine(new_object.ToLongString());
+            Console.WriteLine("\n");
+                                                                    */
 
+                                                                    /*
             V4MainCollection new_main_obj = new V4MainCollection();
             new_main_obj.AddDefaults();
             Console.WriteLine(new_main_obj.ToString());
 
-            foreach (var item in new_main_obj.return_list())
+            foreach (var item in new_main_obj)
             {
                 Complex[] obj = item.NearMax((float)0.001);
                 for (int i = 0; i < obj.Length; i++)
@@ -337,6 +343,22 @@ namespace msu_homework
                     Console.WriteLine(obj[i].ToString());
                 }
             }
+                                                                    */
+
+
+                                                                    /* REMOVE TEST
+                                            //Grid2D just_object = new Grid2D((float)2.1, 5, (float)4.2, 5);
+            V4MainCollection new_main_obj_1 = new V4MainCollection();
+            V4DataOnGrid grid_object_0 = new V4DataOnGrid("hi", 2.4, just_object);
+            V4DataOnGrid grid_object_1 = new V4DataOnGrid("hello", 2.4, just_object);
+            V4DataOnGrid grid_object_2 = new V4DataOnGrid("hehe", 2.4, just_object);
+            V4DataOnGrid grid_object_3 = new V4DataOnGrid("hello", 2.4, just_object);
+            new_main_obj.Add(grid_object_0);
+            new_main_obj.Add(grid_object_1);
+            new_main_obj.Add(grid_object_2);
+            new_main_obj.Add(grid_object_3);
+            bool a = new_main_obj_1.Remove("hello", 2.4);
+                                                                    */
 
         }
     }
