@@ -47,8 +47,8 @@ namespace msu_homework
 
     public class V4DataOnGrid : V4Data
     {
-        public Grid2D net;
-        public Complex[,] complex_massiv;
+        public Grid2D net { get; set; }
+        public Complex[,] complex_massiv { get; set; }
 
         public V4DataOnGrid(string measure, double frequency, Grid2D new_net) : base(measure, frequency)
         {
@@ -198,6 +198,11 @@ namespace msu_homework
             Complex[] NearMaxReturnable = new Complex[10];
 
             int mass_length = 10;
+
+            foreach (Complex complex_value in dict.Values)
+            {
+                maximum = Math.Max(complex_value.Magnitude, maximum);
+            }
 
             foreach (Complex complex_value in dict.Values)
             {
